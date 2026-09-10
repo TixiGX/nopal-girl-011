@@ -85,4 +85,8 @@ alla radice del repository.
 
 ## Licenza
 
-[Apache 2.0](LICENSE)
+© 2026 Nopal Girl — Tutti i diritti riservati. Vedi [LICENSE](LICENSE).
+
+Questo progetto è **privato e proprietario**: nessun uso, copia, modifica o
+distribuzione — anche parziale — è consentita senza autorizzazione scritta
+della proprietaria.

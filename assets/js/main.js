@@ -1,3 +1,4 @@
+/* © 2026 Nopal Girl — Tutti i diritti riservati. Vietati uso, copia e distribuzione. Vedi LICENSE. */
 /* ============================================================
    Nopal Girl — shared scripts (vanilla, no dependencies)
    ============================================================ */
