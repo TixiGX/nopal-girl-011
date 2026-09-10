@@ -634,7 +634,7 @@ body::before {
 .social-hero p { max-width: 600px; margin: 18px auto 0; opacity: 0.92; font-size: 1.06rem; }
 
 .social-icons {
-  display: grid; grid-template-columns: repeat(7, 1fr); gap: 14px;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
   margin-top: 44px;
 }
 .social-link {
@@ -660,6 +660,7 @@ body::before {
 .social-link:hover .fa-x-twitter { color: #000; }
 .social-link:hover .fa-pinterest { color: #e60023; }
 .social-link:hover .fa-whatsapp { color: #25d366; }
+.social-link:hover .fa-telegram { color: #26a5e4; }
 .social-link span { font-size: 0.82rem; font-weight: 600; letter-spacing: 0.04em; }
 .social-link small { font-size: 0.68rem; opacity: 0.75; margin-top: -6px; }
 
@@ -688,6 +689,7 @@ body::before {
 .ic-x  { background: #222; }
 .ic-pi { background: #e60023; }
 .ic-wa { background: #25d366; }
+.ic-tg { background: #26a5e4; }
 
 /* ---------------- CTA strip ---------------- */
 .cta-strip {
