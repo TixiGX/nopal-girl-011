@@ -1,0 +1,24 @@
+# Sistema operativo / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Backup manuali: usa Git per la cronologia
+*.bak
+*.backup
+*.backup_*
+*.before_*
+*.orig
+*~
+
+# Log e temporanei
+*.log
+.cache/
+
+# Telegram: mai committare sessioni o credenziali
+*.session
+*.session-journal
+.env

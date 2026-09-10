@@ -1,0 +1,47 @@
+name: Sync galleria da Telegram
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"      # ogni 6 ore
+  workflow_dispatch:           # avvio manuale dalla tab Actions
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-telegram
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scripts/requirements.txt
+
+      - run: pip install -r scripts/requirements.txt
+
+      - name: Scarica le foto dal gruppo Telegram
+        env:
+          TG_API_ID: ${{ secrets.TG_API_ID }}
+          TG_API_HASH: ${{ secrets.TG_API_HASH }}
+          TG_SESSION: ${{ secrets.TG_SESSION }}
+          TG_CHAT: ${{ vars.TG_CHAT || 'https://t.me/+gjZgJrg2KqRkOWE0' }}
+        run: python3 scripts/sync_telegram.py
+
+      - name: Commit delle novità
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/images/telegram assets/data/gallery.json
+          if git diff --cached --quiet; then
+            echo "Nessuna nuova foto."
+          else
+            git commit -m "chore: aggiorna galleria da Telegram ($(date -u +'%Y-%m-%d %H:%M UTC'))"
+            git push
+          fi
