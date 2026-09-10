@@ -69,13 +69,14 @@ jobs:
           set +e
           python3 scripts/sync_telegram.py 2> sync_error.log
           rc=$?
-          if [ $rc -ne 0 ]; then
-            # Espone il motivo del fallimento come annotazione del check run.
-            while IFS= read -r line; do
-              [ -n "$line" ] && echo "::error::$line"
-            done < sync_error.log
-            exit $rc
-          fi
+          # Espone l'esito come annotazione: AVVISO -> notice, ERRORE -> error.
+          while IFS= read -r line; do
+            case "$line" in
+              AVVISO:*) echo "::notice::$line" ;;
+              *) [ -n "$line" ] && echo "::error::$line" ;;
+            esac
+          done < sync_error.log
+          [ $rc -ne 0 ] && exit $rc
 
       - name: Commit delle novità
         run: |
