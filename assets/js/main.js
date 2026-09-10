@@ -1,3 +1,4 @@
+/* © 2026 Nopal Girl — Tutti i diritti riservati. Vietati uso, copia e distribuzione. Vedi LICENSE. */
 /* ============================================================
    Nopal Girl — shared scripts (vanilla, no dependencies)
    ============================================================ */
@@ -105,9 +106,115 @@
   }
   buildSparkles(18);
 
-  /* ---------- Gallery renderer + lightbox ---------- */
+  /* ---------- Link riservati (offuscati) ----------
+     Gli URL sensibili (album Google Foto, contatto WhatsApp) sono salvati
+     in forma codificata e scritti negli href solo a runtime: non compaiono
+     mai in chiaro nel codice sorgente.
+     Per cambiarli: codifica il nuovo URL in base64
+       echo -n 'NUOVO-URL' | base64
+     dividilo in 3 parti e sostituisci i pezzi qui sotto. */
+  const SECRET_LINKS = {
+    photos: ['aHR0cHM6Ly9waG90', 'b3MuYXBwLmdvby5nbC9qcFhTU3FNenFE', 'N0VHSHpzOQ=='],
+    whatsapp: ['aHR0cHM6Ly93YS5t', 'ZS9xci8yN1BDRUVG', 'VlVYVkxLMQ==']
+  };
+  function decodeSecret(key) {
+    try {
+      const parts = SECRET_LINKS[key];
+      if (!parts) return '#';
+      return atob(parts.join(''));
+    } catch (e) { return '#'; }
+  }
+  function revealSecrets() {
+    $$('[data-secret]').forEach(function (a) {
+      const url = decodeSecret(a.getAttribute('data-secret'));
+      if (url && url.charAt(0) === 'h') a.setAttribute('href', url);
+    });
+  }
+
+  /* ---------- Protezione contenuti ----------
+     Deterrente anti-copia: blocca tasto destro, trascinamento dei media,
+     copia/taglia, scorciatoie di salvataggio/ispezione e stampa.
+     Nota onesta: nessuna protezione lato client è al 100%, ma scoraggia
+     la copia occasionale. */
+  const PROTECT_MSG = 'Contenuti protetti — riproduzione vietata';
+  let toastEl = null;
+  let toastTimer = null;
+  function showToast(msg) {
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.className = 'toast';
+      toastEl.setAttribute('role', 'status');
+      toastEl.setAttribute('aria-live', 'polite');
+      document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2200);
+  }
+
+  // Tasto destro / long-press: disabilitati (tranne nei campi di testo)
+  document.addEventListener('contextmenu', function (e) {
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    e.preventDefault();
+    showToast(PROTECT_MSG);
+  });
+
+  // Trascinamento di immagini e video: disabilitato
+  document.addEventListener('dragstart', function (e) { e.preventDefault(); });
+  $$('img, video').forEach(function (m) {
+    m.setAttribute('draggable', 'false');
+    m.addEventListener('dragstart', function (e) { e.preventDefault(); });
+  });
+
+  // Copia e taglia: bloccati
+  ['copy', 'cut'].forEach(function (evt) {
+    document.addEventListener(evt, function (e) {
+      e.preventDefault();
+      showToast('Copia disabilitata — contenuti protetti');
+    });
+  });
+
+  // Scorciatoie di ispezione/salvataggio/stampa: bloccate
+  document.addEventListener('keydown', function (e) {
+    const k = (e.key || '').toLowerCase();
+    const mod = e.ctrlKey || e.metaKey;
+    const blocked =
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && ['i', 'j', 'c', 'k'].indexOf(k) !== -1) ||
+      (mod && !e.shiftKey && ['u', 's', 'p'].indexOf(k) !== -1);
+    if (blocked) {
+      e.preventDefault();
+      showToast(PROTECT_MSG);
+    }
+  });
+
+  // Tasto Stamp: best-effort, sporca gli appunti (se il browser lo permette)
+  document.addEventListener('keyup', function (e) {
+    if (e.key === 'PrintScreen') {
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(PROTECT_MSG).catch(function () {});
+        }
+      } catch (err) { /* clipboard non disponibile: ignora */ }
+      showToast(PROTECT_MSG);
+    }
+  });
+
+  // Avviso in console per i curiosi
+  try {
+    console.log(
+      '%cNopal Girl — Contenuti protetti da copyright. È vietata la riproduzione anche parziale.',
+      'font-size:14px;font-weight:bold;color:#b97a3f;'
+    );
+  } catch (err) { /* console non disponibile: ignora */ }
+
+  /* ---------- Gallery renderer + lightbox ----------
+     Le foto arrivano da assets/data/photos.json, generato dallo script
+     di sync che legge l'album condiviso di Google Foto. */
   function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, function (c) {
+    return String(s).replace(/[&<>\"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
@@ -126,7 +233,7 @@
       '<button class="lb-btn lb-close" aria-label="Chiudi"><i class="fas fa-xmark"></i></button>' +
       '<button class="lb-btn lb-prev" aria-label="Precedente"><i class="fas fa-chevron-left"></i></button>' +
       '<button class="lb-btn lb-next" aria-label="Successiva"><i class="fas fa-chevron-right"></i></button>' +
-      '<figure><img alt=""><figcaption><h3></h3><p></p></figcaption></figure>' +
+      '<figure><img alt="" referrerpolicy="no-referrer"><figcaption><h3></h3><p></p></figcaption></figure>' +
       '<div class="lb-counter"></div>';
     document.body.appendChild(lightbox);
 
@@ -154,9 +261,9 @@
     const item = lbItems[lbIndex];
     const img = $('img', lightbox);
     img.src = item.image;
-    img.alt = item.title;
+    img.alt = item.title || 'Foto della galleria';
     $('h3', lightbox).textContent = item.title || '';
-    $('p', lightbox).textContent = [item.description, item.tag].filter(Boolean).join(' · ');
+    $('p', lightbox).textContent = item.description || '';
     $('.lb-counter', lightbox).textContent = (lbIndex + 1) + ' / ' + lbItems.length;
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -177,16 +284,14 @@
     items.forEach(function (item, i) {
       const card = document.createElement('button');
       card.type = 'button';
-      card.className = 'card reveal-scale' + (item.size ? ' ' + item.size : '');
+      card.className = 'card reveal-scale';
       card.setAttribute('aria-label', 'Apri ' + (item.title || 'foto ' + (i + 1)));
       card.innerHTML =
-        '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title || 'Foto della galleria') + '"' +
-          (item.width && item.height ? ' width="' + item.width + '" height="' + item.height + '"' : '') +
-          ' loading="lazy" decoding="async">' +
+        '<img src="' + escapeHtml(item.thumb) + '" alt="' + escapeHtml(item.title || 'Foto della galleria') + '"' +
+          ' loading="lazy" decoding="async" referrerpolicy="no-referrer" draggable="false">' +
         '<span class="zoom" aria-hidden="true"><i class="fas fa-expand"></i></span>' +
-        ((item.title || item.description || item.tag)
+        ((item.title || item.description)
           ? '<div class="card-caption">' +
-              (item.tag ? '<span class="tag">' + escapeHtml(item.tag) + '</span>' : '') +
               (item.title ? '<h3>' + escapeHtml(item.title) + '</h3>' : '') +
               (item.description ? '<p>' + escapeHtml(item.description) + '</p>' : '') +
             '</div>'
@@ -200,14 +305,16 @@
     observeReveal(grid);
   }
 
-  /* Stato vuoto / errore della galleria */
+  /* Stato vuoto / errore della galleria, con rimando all'album */
   function renderGalleryEmpty(grid, message) {
     if (!grid) return;
     grid.innerHTML =
       '<div class="gallery-empty reveal is-visible">' +
-        '<span class="ic"><i class="fab fa-telegram"></i></span>' +
+        '<span class="ic"><i class="fas fa-images"></i></span>' +
         '<h3>La galleria si sta riempiendo</h3>' +
         '<p>' + escapeHtml(message) + '</p>' +
+        '<a href="' + escapeHtml(decodeSecret('photos')) + '" class="btn btn-primary" target="_blank" rel="noopener">' +
+          '<i class="fas fa-images"></i> Apri l\u2019album</a>' +
       '</div>';
   }
 
@@ -217,44 +324,35 @@
     } catch (e) { return ''; }
   }
 
-  /* Trasforma le voci del JSON in item per la griglia.
-     size: dal rapporto d'aspetto reale della foto (panoramica → wide, verticale → tall). */
-  function mapTelegramItems(data) {
+  function mapPhotosItems(data) {
     return (data.items || []).map(function (it) {
-      const ratio = it.width && it.height ? it.width / it.height : 1;
       return {
-        image: it.file,
+        image: it.image || '',
+        thumb: it.thumb || it.image || '',
         title: it.title || '',
-        description: it.description || '',
-        tag: it.date ? formatDate(it.date) : '',
-        width: it.width, height: it.height,
-        size: ratio >= 1.45 ? 'wide' : ratio <= 0.8 ? 'tall' : ''
+        description: it.description || ''
       };
-    });
+    }).filter(function (it) { return !!it.image; });
   }
 
   function loadGallery(grid) {
     if (!grid) return;
-    const src = grid.dataset.src || 'assets/data/gallery.json';
+    const src = grid.dataset.src || 'assets/data/photos.json';
     const limit = parseInt(grid.dataset.limit, 10);
     const meta = document.getElementById('gallery-meta');
 
     fetch(src + '?v=' + Math.floor(Date.now() / 300000), { cache: 'no-cache' })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (data) {
-        let items = mapTelegramItems(data);
+        const items = mapPhotosItems(data);
         if (!items.length) {
-          renderGalleryEmpty(grid, 'Le prime foto arriveranno presto dal gruppo Telegram.');
+          renderGalleryEmpty(grid, 'Le prime foto stanno arrivando: intanto puoi aprire direttamente l\u2019album.');
           return;
         }
-        if (limit > 0) {
-          items = items.slice(0, limit);
-          // in anteprima niente celle alte: griglia compatta
-          items.forEach(function (it) { if (it.size === 'tall') it.size = ''; });
-        }
-        renderGallery(grid, items);
-        if (meta && data.updated) {
-          meta.innerHTML = '<i class="fab fa-telegram"></i> ' + data.count + ' foto · aggiornata il ' + escapeHtml(formatDate(data.updated));
+        renderGallery(grid, limit > 0 ? items.slice(0, limit) : items);
+        if (meta) {
+          meta.innerHTML = '<i class="fas fa-images"></i> ' + data.count + ' foto' +
+            (data.updated ? ' · aggiornata il ' + escapeHtml(formatDate(data.updated)) : '');
         }
       })
       .catch(function () {
@@ -281,6 +379,7 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     initVideo();
+    revealSecrets();
     loadGallery(document.getElementById('gallery-grid'));
   });
 })();

@@ -17,8 +17,3 @@ Thumbs.db
 # Log e temporanei
 *.log
 .cache/
-
-# Telegram: mai committare sessioni o credenziali
-*.session
-*.session-journal
-.env

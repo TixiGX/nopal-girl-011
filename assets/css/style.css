@@ -1,3 +1,4 @@
+/* © 2026 Nopal Girl — Tutti i diritti riservati. Vietati uso, copia e distribuzione. Vedi LICENSE. */
 /* ============================================================
    Nopal Girl — "Golden Hour" equestrian theme
    Palette ispirata alle illustrazioni: tramonto rosa/ambra,
@@ -541,7 +542,7 @@ body::before {
   font-size: 0.8rem; letter-spacing: 0.06em; color: var(--ink-3);
 }
 .gallery-meta:empty { display: none; }
-.gallery-meta i { color: #26a5e4; }
+.gallery-meta i { color: var(--amber-deep); }
 .gallery-grid[aria-busy="true"]:empty { min-height: 260px; }
 .gallery-grid[aria-busy="true"]:empty::before {
   content: ''; grid-column: 1 / -1; border-radius: var(--radius);
@@ -557,8 +558,8 @@ body::before {
 }
 .gallery-empty .ic {
   width: 64px; height: 64px; border-radius: 20px; display: grid; place-items: center;
-  font-size: 1.8rem; color: #fff; background: #26a5e4; margin-bottom: 6px;
-  box-shadow: 0 12px 30px rgba(38, 165, 228, 0.35);
+  font-size: 1.8rem; color: #fff; background: var(--grad-warm); margin-bottom: 6px;
+  box-shadow: var(--glow-amber);
 }
 .gallery-empty h3 { font-family: var(--font-display); font-weight: 600; font-size: 1.6rem; }
 .gallery-empty p { color: var(--ink-3); max-width: 420px; }
@@ -658,7 +659,7 @@ body::before {
 .social-link:hover .fa-tiktok { color: #000; }
 .social-link:hover .fa-x-twitter { color: #000; }
 .social-link:hover .fa-pinterest { color: #e60023; }
-.social-link:hover .fa-telegram { color: #26a5e4; }
+.social-link:hover .fa-whatsapp { color: #25d366; }
 .social-link span { font-size: 0.82rem; font-weight: 600; letter-spacing: 0.04em; }
 .social-link small { font-size: 0.68rem; opacity: 0.75; margin-top: -6px; }
 
@@ -686,7 +687,7 @@ body::before {
 .ic-fb { background: #1877f2; }
 .ic-x  { background: #222; }
 .ic-pi { background: #e60023; }
-.ic-tg { background: #26a5e4; }
+.ic-wa { background: #25d366; }
 
 /* ---------------- CTA strip ---------------- */
 .cta-strip {
@@ -782,6 +783,59 @@ footer {
   100% { transform: translateY(-10vh) scale(1); opacity: 0; }
 }
 
+/* ---------------- Protezione contenuti ---------------- */
+img, video {
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* Niente menu long-press su iOS */
+body { -webkit-touch-callout: none; }
+
+/* Avviso toast per i tentativi di copia */
+.toast {
+  position: fixed; left: 50%; bottom: 28px; z-index: 5000;
+  transform: translate(-50%, 16px);
+  background: rgba(42, 31, 26, 0.94); color: #fff;
+  padding: 12px 22px; border-radius: var(--pill);
+  font-size: 0.88rem; letter-spacing: 0.02em; text-align: center;
+  box-shadow: var(--shadow-md);
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.35s, transform 0.35s var(--ease), visibility 0.35s;
+  pointer-events: none; max-width: calc(100vw - 40px);
+}
+.toast.show { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+
+/* Pulsante WhatsApp flottante */
+.wa-float {
+  position: fixed; left: 24px; bottom: 24px; z-index: 900;
+  width: 56px; height: 56px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: #25d366; color: #fff; font-size: 1.7rem;
+  box-shadow: 0 14px 34px rgba(37, 211, 102, 0.45);
+  transition: transform 0.4s var(--ease), box-shadow 0.4s;
+}
+.wa-float:hover { transform: scale(1.1) rotate(-6deg); box-shadow: 0 18px 44px rgba(37, 211, 102, 0.55); }
+.wa-float::before {
+  content: ''; position: absolute; inset: -4px; border-radius: 50%;
+  border: 2px solid rgba(37, 211, 102, 0.5);
+  animation: wa-ping 2.4s ease-out infinite;
+}
+@keyframes wa-ping {
+  0% { transform: scale(0.85); opacity: 1; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+
+/* Stampa disabilitata: solo avviso copyright */
+.print-notice { display: none; }
+@media print {
+  body > *:not(.print-notice) { display: none !important; }
+  .print-notice {
+    display: block !important; padding: 80px 30px; text-align: center;
+    font-family: Georgia, serif; font-size: 1.2rem; color: #000;
+  }
+}
+
 /* ---------------- Responsive ---------------- */
 @media (max-width: 1024px) {
   .values { grid-template-columns: 1fr 1fr; }
@@ -830,6 +884,7 @@ footer {
   .social-cards { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr; }
   .about-badge { left: 8px; bottom: 16px; padding: 12px 16px; }
+  .wa-float { left: 16px; bottom: 16px; width: 52px; height: 52px; }
   .lb-prev, .lb-next { width: 44px; height: 44px; top: auto; bottom: 60px; transform: none; }
   .lb-prev:hover, .lb-next:hover { transform: scale(1.06); }
 }
