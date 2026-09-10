@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Nopal Girl — Galleria</title>
+  <meta name="description" content="Galleria fotografica dei salti ostacoli di Nopal Girl">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐎</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Dancing+Script:wght@500;700&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <a href="#main" class="skip-link">Vai al contenuto principale</a>
+
+  <nav class="nav" aria-label="Menu principale">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-icon">🐎</span> Nopal Girl
+      </a>
+      <button class="mobile-toggle" aria-label="Apri menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="gallery.html" class="active">Galleria</a></li>
+        <li><a href="social.html">Social</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main id="main">
+    <section id="gallery" style="padding-top: calc(var(--nav-h) + 60px);">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>La mia Galleria di Salti</h2>
+          <div class="underline"></div>
+          <p>Momenti catturati di libertà, potenza e grazia in volo</p>
+        </div>
+        <div id="gallery-grid" class="gallery-grid"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Nopal Girl. Tutti i diritti riservati.</p>
+  </footer>
+
+  <script>
+    window.NOPAL_GALLERY = [
+      { icon: '🏇', title: 'Prima gara', description: 'Il cuore batte forte davanti all\'ostacolo', image: '' },
+      { icon: '🐎', title: 'In volo', description: 'Leggerezza e potenza in perfetto equilibrio', image: '' },
+      { icon: '🤝', title: 'Fiducia', description: 'Un salto insieme, cavaliere e cavallo', image: '' },
+      { icon: '🎯', title: 'Determinazione', description: 'Lo sguardo fisso sull\'obiettivo', image: '' },
+      { icon: '✨', title: 'Eleganza', description: 'Stile e grazia in ogni movimento', image: '' },
+      { icon: '💪', title: 'Forza', description: 'Potenza controllata e precisione', image: '' }
+    ];
+  </script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
