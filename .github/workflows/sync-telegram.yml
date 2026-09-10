@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: "*/20 * * * *"     # ogni 20 minuti
   workflow_dispatch:           # avvio manuale dalla tab Actions
+  push:                        # sync subito dopo ogni aggiornamento su main
+    branches: [main]           # (i commit del bot non ri-attivano i workflow)
 
 permissions:
   contents: write
