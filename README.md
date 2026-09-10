@@ -7,19 +7,24 @@ Sito statico in HTML, CSS e JavaScript puro, senza dipendenze né build step.
 
 ```
 .
-├── index.html                 Home: hero con video, storia, valori, album foto, social
-├── gallery.html               Galleria: album condiviso di Google Foto + come funziona
+├── index.html                 Home: hero con video, storia, valori, galleria foto, social
+├── gallery.html               Galleria completa dall'album Google Foto
 ├── social.html                Link ai profili social + contatto WhatsApp
+├── scripts/
+│   └── sync_photos.py         Legge l'album Google Foto e rigenera photos.json
+├── .github/workflows/
+│   └── sync-photos.yml        Sync automatico ogni 6 ore + avvio manuale
 └── assets/
     ├── css/style.css          Foglio di stile (design token in :root)
-    ├── js/main.js             Nav, reveal, sparkles, link riservati, protezione, video
+    ├── js/main.js             Nav, reveal, galleria + lightbox, link riservati, protezione
+    ├── data/photos.json       Elenco foto, generato dallo script di sync
     └── videos/                Video hero e immagine poster
 ```
 
 ## Sviluppo locale
 
 Non serve installare nulla. Per evitare limitazioni del protocollo `file://`
-(font e icone da CDN, autoplay video) usa un server statico:
+(fetch del JSON, font e icone da CDN, autoplay video) usa un server statico:
 
 ```bash
 python3 -m http.server 8000
@@ -29,14 +34,39 @@ npx serve .
 
 Poi apri <http://localhost:8000>.
 
-## Galleria con Google Foto
+## Galleria automatica da Google Foto
 
-Le foto **non sono nel repository**: vivono in un album condiviso di Google Foto.
-Il sito mostra una scheda «Apri l'album» che porta all'album: ogni foto aggiunta
-all'album è subito visibile a chi apre il link, senza toccare il sito.
+Le foto **non sono nel repository**: vivono nell'album condiviso di Google Foto
+e il sito le mostra direttamente nella griglia, con lightbox per ingrandirle
+(clic, frecce, swipe).
 
-Per aggiungere foto basta aggiungerle all'album condiviso da telefono o computer
-(app Google Foto → l'album → Aggiungi foto). Il link dell'album resta sempre lo stesso.
+Ogni 6 ore (più avvio manuale) il workflow **Sync foto da Google Foto** legge
+l'album e aggiorna `assets/data/photos.json` con gli URL diretti delle foto.
+Le immagini restano sui server di Google, quindi il repository non si appesantisce.
+Il commit avviene solo se ci sono novità.
+
+Configurazione una tantum:
+
+1. Su GitHub → *Settings → Secrets and variables → Actions* crea il secret
+   `PHOTOS_ALBUM_URL` con il link di condivisione dell'album (quello che inizia
+   con `https://photos.app.goo.gl/...`). Senza secret il workflow fallisce.
+2. Aggiungi foto all'album da telefono o computer (app Google Foto → l'album →
+   Aggiungi foto). L'album deve restare condiviso «chiunque abbia il link».
+3. Tab *Actions* → «Sync foto da Google Foto» → **Run workflow**. Da lì in poi
+   gira da solo ogni 6 ore.
+
+Per lanciare il sync a mano dal PC (solo libreria standard, nulla da installare):
+
+```bash
+PHOTOS_ALBUM_URL='...' python3 scripts/sync_photos.py
+```
+
+> Il link dell'album non compare mai nel codice: nel sito è offuscato
+> (`SECRET_LINKS` in `assets/js/main.js`), nel workflow vive nel secret.
+
+Limiti noti: vengono lette le foto presenti nella pagina iniziale dell'album
+(basta per album personali fino a ~100 foto); titoli e descrizioni delle foto
+non vengono importati.
 
 ## Contatto WhatsApp
 

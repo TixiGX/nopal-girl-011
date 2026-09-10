@@ -189,28 +189,14 @@
         <div class="section-head reveal">
           <span class="eyebrow center">Galleria</span>
           <h2 id="gallery-title">Momenti <em>in volo</em></h2>
-          <p>Libertà, potenza e grazia: tutte le mie foto vivono nel mio album condiviso di Google Foto, sempre aggiornato.</p>
+          <p>Libertà, potenza e grazia: le foto più recenti dal mio album di Google Foto. Clicca per ingrandire.</p>
+          <p id="gallery-meta" class="gallery-meta" aria-live="polite"></p>
         </div>
-        <div class="album-card reveal-scale">
-          <div class="album-cover">
-            <span class="album-badge-float"><i class="fas fa-images"></i> Album condiviso</span>
-            <img src="assets/videos/video-poster.jpg" alt="Althea con il suo cavallo al tramonto" loading="lazy" decoding="async" draggable="false">
-          </div>
-          <div class="album-body">
-            <h3>Le mie foto, <em>sempre con me</em></h3>
-            <p>Salti, gare, allenamenti e momenti di complicità: sfoglia l'album completo direttamente su Google Foto, da telefono o computer.</p>
-            <ul class="album-feats">
-              <li><i class="fas fa-check"></i> Album sempre aggiornato: ogni nuova foto compare subito</li>
-              <li><i class="fas fa-check"></i> Alta qualità: ingrandisci pure ogni dettaglio</li>
-              <li><i class="fas fa-check"></i> Si apre nell'app Google Foto che hai già sul telefono</li>
-            </ul>
-            <div class="album-actions">
-              <a data-secret="photos" href="#" class="btn btn-primary" target="_blank" rel="noopener"><i class="fas fa-images"></i> Apri l'album <i class="fas fa-arrow-right"></i></a>
-              <a href="gallery.html" class="btn btn-outline"><i class="fas fa-circle-info"></i> Come funziona</a>
-            </div>
-            <p class="album-note"><i class="fas fa-lock"></i> Le foto sono protette da copyright: guardale e sogna, ma non copiarle.</p>
-          </div>
-        </div>
+        <div id="gallery-grid" class="gallery-grid" data-src="assets/data/photos.json" data-limit="6" aria-busy="true"></div>
+        <p class="gallery-note reveal">
+          <a data-secret="photos" href="#" class="btn btn-primary" target="_blank" rel="noopener"><i class="fas fa-images"></i> Apri l'album completo <i class="fas fa-arrow-right"></i></a>
+          <a href="gallery.html" class="btn btn-outline"><i class="fas fa-border-all"></i> Vai alla galleria</a>
+        </p>
       </div>
     </section>
 

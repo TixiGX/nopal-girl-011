@@ -210,6 +210,156 @@
     );
   } catch (err) { /* console non disponibile: ignora */ }
 
+  /* ---------- Gallery renderer + lightbox ----------
+     Le foto arrivano da assets/data/photos.json, generato dallo script
+     di sync che legge l'album condiviso di Google Foto. */
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>\"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  let lbItems = [];
+  let lbIndex = 0;
+  let lightbox = null;
+
+  function buildLightbox() {
+    lightbox = document.createElement('div');
+    lightbox.className = 'lightbox';
+    lightbox.setAttribute('role', 'dialog');
+    lightbox.setAttribute('aria-modal', 'true');
+    lightbox.setAttribute('aria-label', 'Immagine ingrandita');
+    lightbox.innerHTML =
+      '<button class="lb-btn lb-close" aria-label="Chiudi"><i class="fas fa-xmark"></i></button>' +
+      '<button class="lb-btn lb-prev" aria-label="Precedente"><i class="fas fa-chevron-left"></i></button>' +
+      '<button class="lb-btn lb-next" aria-label="Successiva"><i class="fas fa-chevron-right"></i></button>' +
+      '<figure><img alt="" referrerpolicy="no-referrer"><figcaption><h3></h3><p></p></figcaption></figure>' +
+      '<div class="lb-counter"></div>';
+    document.body.appendChild(lightbox);
+
+    $('.lb-close', lightbox).addEventListener('click', closeLightbox);
+    $('.lb-prev', lightbox).addEventListener('click', function () { showLightbox(lbIndex - 1); });
+    $('.lb-next', lightbox).addEventListener('click', function () { showLightbox(lbIndex + 1); });
+    lightbox.addEventListener('click', function (e) { if (e.target === lightbox) closeLightbox(); });
+    document.addEventListener('keydown', function (e) {
+      if (!lightbox.classList.contains('open')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') showLightbox(lbIndex - 1);
+      if (e.key === 'ArrowRight') showLightbox(lbIndex + 1);
+    });
+    // swipe
+    let startX = 0;
+    lightbox.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; }, { passive: true });
+    lightbox.addEventListener('touchend', function (e) {
+      const dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) > 50) showLightbox(lbIndex + (dx < 0 ? 1 : -1));
+    });
+  }
+  function showLightbox(i) {
+    if (!lightbox) buildLightbox();
+    lbIndex = (i + lbItems.length) % lbItems.length;
+    const item = lbItems[lbIndex];
+    const img = $('img', lightbox);
+    img.src = item.image;
+    img.alt = item.title || 'Foto della galleria';
+    $('h3', lightbox).textContent = item.title || '';
+    $('p', lightbox).textContent = item.description || '';
+    $('.lb-counter', lightbox).textContent = (lbIndex + 1) + ' / ' + lbItems.length;
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    $('.lb-close', lightbox).focus();
+  }
+  function closeLightbox() {
+    if (!lightbox) return;
+    lightbox.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function renderGallery(grid, items) {
+    if (!grid) return;
+    grid.innerHTML = '';
+    lbItems = items;
+    const frag = document.createDocumentFragment();
+
+    items.forEach(function (item, i) {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'card reveal-scale';
+      card.setAttribute('aria-label', 'Apri ' + (item.title || 'foto ' + (i + 1)));
+      card.innerHTML =
+        '<img src="' + escapeHtml(item.thumb) + '" alt="' + escapeHtml(item.title || 'Foto della galleria') + '"' +
+          ' loading="lazy" decoding="async" referrerpolicy="no-referrer" draggable="false">' +
+        '<span class="zoom" aria-hidden="true"><i class="fas fa-expand"></i></span>' +
+        ((item.title || item.description)
+          ? '<div class="card-caption">' +
+              (item.title ? '<h3>' + escapeHtml(item.title) + '</h3>' : '') +
+              (item.description ? '<p>' + escapeHtml(item.description) + '</p>' : '') +
+            '</div>'
+          : '');
+      card.addEventListener('click', function () { showLightbox(i); });
+      frag.appendChild(card);
+    });
+
+    grid.appendChild(frag);
+    Array.from(grid.children).forEach(function (c, i) { c.style.setProperty('--i', i % 6); });
+    observeReveal(grid);
+  }
+
+  /* Stato vuoto / errore della galleria, con rimando all'album */
+  function renderGalleryEmpty(grid, message) {
+    if (!grid) return;
+    grid.innerHTML =
+      '<div class="gallery-empty reveal is-visible">' +
+        '<span class="ic"><i class="fas fa-images"></i></span>' +
+        '<h3>La galleria si sta riempiendo</h3>' +
+        '<p>' + escapeHtml(message) + '</p>' +
+        '<a href="' + escapeHtml(decodeSecret('photos')) + '" class="btn btn-primary" target="_blank" rel="noopener">' +
+          '<i class="fas fa-images"></i> Apri l\u2019album</a>' +
+      '</div>';
+  }
+
+  function formatDate(iso) {
+    try {
+      return new Date(iso).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+    } catch (e) { return ''; }
+  }
+
+  function mapPhotosItems(data) {
+    return (data.items || []).map(function (it) {
+      return {
+        image: it.image || '',
+        thumb: it.thumb || it.image || '',
+        title: it.title || '',
+        description: it.description || ''
+      };
+    }).filter(function (it) { return !!it.image; });
+  }
+
+  function loadGallery(grid) {
+    if (!grid) return;
+    const src = grid.dataset.src || 'assets/data/photos.json';
+    const limit = parseInt(grid.dataset.limit, 10);
+    const meta = document.getElementById('gallery-meta');
+
+    fetch(src + '?v=' + Math.floor(Date.now() / 300000), { cache: 'no-cache' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (data) {
+        const items = mapPhotosItems(data);
+        if (!items.length) {
+          renderGalleryEmpty(grid, 'Le prime foto stanno arrivando: intanto puoi aprire direttamente l\u2019album.');
+          return;
+        }
+        renderGallery(grid, limit > 0 ? items.slice(0, limit) : items);
+        if (meta) {
+          meta.innerHTML = '<i class="fas fa-images"></i> ' + data.count + ' foto' +
+            (data.updated ? ' · aggiornata il ' + escapeHtml(formatDate(data.updated)) : '');
+        }
+      })
+      .catch(function () {
+        renderGalleryEmpty(grid, 'Impossibile caricare la galleria in questo momento. Riprova tra poco.');
+      });
+  }
+
   /* ---------- Hero video ---------- */
   function initVideo() {
     const video = $('.hero-video video');
@@ -230,5 +380,6 @@
   document.addEventListener('DOMContentLoaded', function () {
     initVideo();
     revealSecrets();
+    loadGallery(document.getElementById('gallery-grid'));
   });
 })();
