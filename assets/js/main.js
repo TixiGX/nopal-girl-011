@@ -107,14 +107,15 @@
   buildSparkles(18);
 
   /* ---------- Link riservati (offuscati) ----------
-     Gli URL sensibili (album Google Foto, contatto WhatsApp) sono salvati
-     in forma codificata e scritti negli href solo a runtime: non compaiono
-     mai in chiaro nel codice sorgente.
-     Per cambiarli: codifica il nuovo URL in base64
-       echo -n 'NUOVO-URL' | base64
-     dividilo in 3 parti e sostituisci i pezzi qui sotto. */
+     Gli URL sensibili sono scritti negli href solo a runtime, quindi non
+     compaiono in chiaro nel codice sorgente.
+     - WhatsApp: URL codificato in base64 qui sotto. Per cambiarlo:
+         echo -n 'NUOVO-URL' | base64
+       dividilo in 3 parti e sostituisci i pezzi.
+     - Il link del canale Telegram/galleria non è hardcodato: arriva dal
+       manifest assets/data/photos.json (campo source_url), generato dallo
+       script di sync, quindi si aggiorna da solo. */
   const SECRET_LINKS = {
-    photos: ['aHR0cHM6Ly9waG90', 'b3MuYXBwLmdvby5nbC9qcFhTU3FNenFE', 'N0VHSHpzOQ=='],
     whatsapp: ['aHR0cHM6Ly93YS5t', 'ZS9xci8yN1BDRUVG', 'VlVYVkxLMQ==']
   };
   function decodeSecret(key) {
@@ -124,9 +125,27 @@
       return atob(parts.join(''));
     } catch (e) { return '#'; }
   }
+
+  let manifestPromise = null;
+  function getManifest() {
+    if (!manifestPromise) {
+      manifestPromise = fetch('assets/data/photos.json?vm=' + Date.now(), { cache: 'no-cache' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .catch(function () { return null; });
+    }
+    return manifestPromise;
+  }
+
   function revealSecrets() {
     $$('[data-secret]').forEach(function (a) {
-      const url = decodeSecret(a.getAttribute('data-secret'));
+      const key = a.getAttribute('data-secret');
+      if (key === 'photos') {
+        getManifest().then(function (data) {
+          if (data && data.source_url) a.setAttribute('href', data.source_url);
+        });
+        return;
+      }
+      const url = decodeSecret(key);
       if (url && url.charAt(0) === 'h') a.setAttribute('href', url);
     });
   }
@@ -212,7 +231,7 @@
 
   /* ---------- Gallery renderer + lightbox ----------
      Le foto arrivano da assets/data/photos.json, generato dallo script
-     di sync che legge l'album condiviso di Google Foto. */
+     di sync che legge il canale Telegram usato come galleria. */
   function escapeHtml(s) {
     return String(s).replace(/[&<>\"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -305,16 +324,19 @@
     observeReveal(grid);
   }
 
-  /* Stato vuoto / errore della galleria, con rimando all'album */
-  function renderGalleryEmpty(grid, message) {
+  /* Stato vuoto / errore della galleria, con rimando al canale Telegram */
+  function renderGalleryEmpty(grid, message, sourceUrl) {
     if (!grid) return;
+    const cta = sourceUrl
+      ? '<a href="' + escapeHtml(sourceUrl) + '" class="btn btn-primary" target="_blank" rel="noopener">' +
+        '<i class="fab fa-telegram"></i> Apri il canale Telegram</a>'
+      : '';
     grid.innerHTML =
       '<div class="gallery-empty reveal is-visible">' +
-        '<span class="ic"><i class="fas fa-images"></i></span>' +
+        '<span class="ic"><i class="fab fa-telegram"></i></span>' +
         '<h3>La galleria si sta riempiendo</h3>' +
         '<p>' + escapeHtml(message) + '</p>' +
-        '<a href="' + escapeHtml(decodeSecret('photos')) + '" class="btn btn-primary" target="_blank" rel="noopener">' +
-          '<i class="fas fa-images"></i> Apri l\u2019album</a>' +
+        cta +
       '</div>';
   }
 
@@ -346,7 +368,7 @@
       .then(function (data) {
         const items = mapPhotosItems(data);
         if (!items.length) {
-          renderGalleryEmpty(grid, 'Le prime foto stanno arrivando: intanto puoi aprire direttamente l\u2019album.');
+          renderGalleryEmpty(grid, 'Le prime foto stanno arrivando: pubblica una foto sul canale Telegram, comparir\u00e0 qui in automatico nel giro di pochi minuti.', data.source_url);
           return;
         }
         renderGallery(grid, limit > 0 ? items.slice(0, limit) : items);
@@ -356,7 +378,9 @@
         }
       })
       .catch(function () {
-        renderGalleryEmpty(grid, 'Impossibile caricare la galleria in questo momento. Riprova tra poco.');
+        getManifest().then(function (d) {
+          renderGalleryEmpty(grid, 'Impossibile caricare la galleria in questo momento. Riprova tra poco.', d && d.source_url);
+        });
       });
   }
 
