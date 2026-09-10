@@ -7,27 +7,19 @@ Sito statico in HTML, CSS e JavaScript puro, senza dipendenze né build step.
 
 ```
 .
-├── index.html                 Home: hero con video, storia, valori, anteprima galleria, social
-├── gallery.html               Galleria completa (foto dal gruppo Telegram)
-├── social.html                Link ai profili social
-├── assets/
-│   ├── css/style.css          Foglio di stile (design token in :root)
-│   ├── js/main.js             Nav, reveal, galleria (fetch del JSON), lightbox, video
-│   ├── data/gallery.json      Indice della galleria, generato dallo script di sync
-│   ├── images/telegram/       Foto scaricate da Telegram (generate, non toccare a mano)
-│   └── videos/                Video hero e immagine poster
-├── scripts/
-│   ├── sync_telegram.py       Scarica le foto dal gruppo e rigenera gallery.json
-│   ├── telegram_login.py      Genera una volta la sessione Telegram (TG_SESSION)
-│   └── requirements.txt       Dipendenze Python (Telethon)
-└── .github/workflows/
-    └── sync-telegram.yml      Sync automatico ogni 6 ore + avvio manuale
+├── index.html                 Home: hero con video, storia, valori, album foto, social
+├── gallery.html               Galleria: album condiviso di Google Foto + come funziona
+├── social.html                Link ai profili social + contatto WhatsApp
+└── assets/
+    ├── css/style.css          Foglio di stile (design token in :root)
+    ├── js/main.js             Nav, reveal, sparkles, link riservati, protezione, video
+    └── videos/                Video hero e immagine poster
 ```
 
 ## Sviluppo locale
 
 Non serve installare nulla. Per evitare limitazioni del protocollo `file://`
-(fetch del JSON, font e icone da CDN, autoplay video) usa un server statico:
+(font e icone da CDN, autoplay video) usa un server statico:
 
 ```bash
 python3 -m http.server 8000
@@ -37,38 +29,47 @@ npx serve .
 
 Poi apri <http://localhost:8000>.
 
-## Galleria automatica da Telegram
+## Galleria con Google Foto
 
-Le foto della galleria **non si caricano a mano**: arrivano dal gruppo Telegram
-[Gallery](https://t.me/+gjZgJrg2KqRkOWE0). Ogni foto pubblicata nel gruppo viene
-scaricata in `assets/images/telegram/`, indicizzata in `assets/data/gallery.json`
-e mostrata sul sito (la didascalia del messaggio diventa titolo + descrizione:
-prima riga = titolo, righe successive = descrizione). Le foto cancellate dal
-gruppo spariscono anche dal sito al sync successivo.
+Le foto **non sono nel repository**: vivono in un album condiviso di Google Foto.
+Il sito mostra una scheda «Apri l'album» che porta all'album: ogni foto aggiunta
+all'album è subito visibile a chi apre il link, senza toccare il sito.
 
-Il gruppo è privato, quindi Telegram non espone le foto pubblicamente: serve
-un account membro del gruppo che faccia da "lettore". Configurazione una tantum:
+Per aggiungere foto basta aggiungerle all'album condiviso da telefono o computer
+(app Google Foto → l'album → Aggiungi foto). Il link dell'album resta sempre lo stesso.
 
-1. Vai su <https://my.telegram.org/apps> con l'account che è nel gruppo e crea
-   un'app: ottieni **API ID** e **API hash**.
-2. In locale genera la sessione (chiede telefono e codice ricevuto su Telegram):
-   ```bash
-   pip install -r scripts/requirements.txt
-   python3 scripts/telegram_login.py
-   ```
-3. Su GitHub → *Settings → Secrets and variables → Actions* crea i **secrets**:
-   `TG_API_ID`, `TG_API_HASH`, `TG_SESSION` (la stringa stampata al punto 2).
-   Facoltativo: la *variable* `TG_CHAT` se il gruppo cambia link.
-4. Tab *Actions* → "Sync galleria da Telegram" → **Run workflow**. Da lì in poi
-   gira da solo ogni 6 ore e committa solo se ci sono novità.
+## Contatto WhatsApp
 
-Per lanciare il sync a mano dal PC:
+Il pulsante verde flottante in basso a sinistra, le icone social e i pulsanti
+«Scrivimi» portano al contatto WhatsApp. Si apre la chat direttamente nell'app.
+
+## Link riservati (offuscati)
+
+I link sensibili (album Google Foto, contatto WhatsApp) **non compaiono in chiaro**
+nel codice: sono salvati in forma codificata in `assets/js/main.js` (`SECRET_LINKS`)
+e scritti negli `href` solo a runtime. Nell'HTML trovi solo `data-secret="photos"`
+e `data-secret="whatsapp"`.
+
+Per cambiare un link: codifica il nuovo URL in base64, dividilo in 3 parti e
+sostituisci i pezzi in `SECRET_LINKS`:
 
 ```bash
-TG_API_ID=... TG_API_HASH=... TG_SESSION=... python3 scripts/sync_telegram.py
+echo -n 'NUOVO-URL' | base64
 ```
 
-> Non committare mai `TG_SESSION` o file `*.session`: sono già in `.gitignore`.
+## Protezione dei contenuti
+
+Il sito scoraggia la copia non autorizzata:
+
+- tasto destro e long-press disabilitati (con avviso)
+- trascinamento di immagini e video disabilitato
+- copia/taglia disabilitati (con avviso)
+- scorciatoie di ispezione/salvataggio/stampa bloccate (F12, Ctrl+U/S/P, …)
+- stampa: mostra solo un avviso di copyright
+- nota di copyright nel footer («Vietata la riproduzione anche parziale»)
+
+> Nota onesta: nessuna protezione lato client è efficace al 100% contro un utente
+> esperto, ma ferma la copia occasionale e chiarisce che i contenuti sono protetti.
 
 ## Aggiornare i link social
 

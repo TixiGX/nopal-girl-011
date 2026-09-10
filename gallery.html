@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Galleria — Nopal Girl</title>
-  <meta name="description" content="La galleria di Nopal Girl: salti, gare, allenamenti e momenti di complicità tra Althea e i suoi cavalli.">
+  <meta name="description" content="La galleria di Nopal Girl: salti, gare, allenamenti e momenti di complicità tra Althea e i suoi cavalli, nel suo album condiviso di Google Foto.">
   <meta name="theme-color" content="#fbf6f0">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐎</text></svg>">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="it_IT">
   <meta property="og:title" content="Galleria — Nopal Girl">
-  <meta property="og:description" content="Momenti in volo: la galleria di salti di Althea.">
+  <meta property="og:description" content="Momenti in volo: l'album di foto di Althea su Google Foto.">
   <meta property="og:image" content="assets/videos/video-poster.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -50,15 +50,47 @@
           <span class="eyebrow center">Galleria</span>
           <h2 id="gallery-title">Momenti <em>in volo</em></h2>
           <p>
-            Libertà, potenza e grazia. Le foto arrivano in automatico dal mio gruppo Telegram:
-            clicca per ingrandire, usa le frecce per sfogliare.
+            Libertà, potenza e grazia. Tutte le mie foto vivono nel mio album
+            condiviso di Google Foto: aprilo e sfoglialo quando vuoi.
           </p>
-          <p id="gallery-meta" class="gallery-meta" aria-live="polite"></p>
         </div>
-        <div id="gallery-grid" class="gallery-grid" data-src="assets/data/gallery.json" aria-busy="true"></div>
-        <p class="gallery-note reveal">
-          <a href="https://t.me/+gjZgJrg2KqRkOWE0" class="btn btn-outline" target="_blank" rel="noopener"><i class="fab fa-telegram"></i> Entra nel gruppo Telegram <i class="fas fa-arrow-right"></i></a>
-        </p>
+        <div class="album-card reveal-scale">
+          <div class="album-cover">
+            <span class="album-badge-float"><i class="fas fa-images"></i> Album condiviso</span>
+            <img src="assets/videos/video-poster.jpg" alt="Althea con il suo cavallo al tramonto" loading="lazy" decoding="async" draggable="false">
+          </div>
+          <div class="album-body">
+            <h3>Il mio album <em>su Google Foto</em></h3>
+            <p>Ogni salto, ogni gara, ogni tramonto in scuderia: l'album si aggiorna da solo ogni volta che aggiungo nuove foto. Salvalo tra i preferiti e torna a trovarmi spesso.</p>
+            <ul class="album-feats">
+              <li><i class="fas fa-check"></i> Si apre direttamente nell'app Google Foto</li>
+              <li><i class="fas fa-check"></i> Foto in alta qualità, ingrandibili con due dita</li>
+              <li><i class="fas fa-check"></i> Sempre aggiornato, senza dover ricaricare il sito</li>
+            </ul>
+            <div class="album-actions">
+              <a data-secret="photos" href="#" class="btn btn-primary" target="_blank" rel="noopener"><i class="fas fa-images"></i> Apri l'album <i class="fas fa-arrow-right"></i></a>
+              <a data-secret="whatsapp" href="#" class="btn btn-outline" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Chiedimi nuove foto</a>
+            </div>
+            <p class="album-note"><i class="fas fa-lock"></i> Le foto sono protette da copyright: guardale e sogna, ma non copiarle.</p>
+          </div>
+        </div>
+        <div class="album-steps" data-stagger>
+          <div class="album-step reveal">
+            <span class="n">01</span>
+            <h4>Apri l'album</h4>
+            <p>Un tocco sul pulsante e si apre Google Foto con tutte le immagini, in ordine di caricamento.</p>
+          </div>
+          <div class="album-step reveal">
+            <span class="n">02</span>
+            <h4>Sfoglia e ingrandisci</h4>
+            <p>Scorri, tocca per ingrandire, pizzica per vedere ogni dettaglio del salto.</p>
+          </div>
+          <div class="album-step reveal">
+            <span class="n">03</span>
+            <h4>Torna a trovarmi</h4>
+            <p>Dopo ogni gara aggiungo nuovi scatti: l'album che hai salvato si aggiorna da solo.</p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -67,7 +99,8 @@
         <h2 id="cta-title">Nuove foto <em>ogni settimana</em></h2>
         <p>Le foto più fresche arrivano prima sui social: allenamenti, gare e dietro le quinte.</p>
         <div class="btn-row">
-          <a href="social.html" class="btn btn-primary"><i class="fab fa-instagram"></i> Seguimi su Instagram</a>
+          <a data-secret="photos" href="#" class="btn btn-primary" target="_blank" rel="noopener"><i class="fas fa-images"></i> Apri l'album</a>
+          <a data-secret="whatsapp" href="#" class="btn btn-ghost" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Scrivimi</a>
           <a href="index.html#storia" class="btn btn-ghost"><i class="fas fa-feather"></i> La mia storia</a>
         </div>
       </div>
@@ -103,18 +136,20 @@
             <a href="https://youtube.com/nopalgirl" target="_blank" rel="noopener" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
             <a href="https://facebook.com/nopalgirl" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
             <a href="https://x.com/nopalgirl" target="_blank" rel="noopener" aria-label="X"><i class="fab fa-x-twitter"></i></a>
-            <a href="https://t.me/+gjZgJrg2KqRkOWE0" target="_blank" rel="noopener" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+            <a data-secret="whatsapp" href="#" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
             <a href="https://pinterest.com/nopalgirl" target="_blank" rel="noopener" aria-label="Pinterest"><i class="fab fa-pinterest"></i></a>
           </div>
         </div>
       </div>
       <div class="footer-bottom">
-        <span>&copy; <span data-year>2026</span> Nopal Girl. Tutti i diritti riservati.</span>
+        <span>&copy; <span data-year>2026</span> Nopal Girl. Tutti i diritti riservati. Vietata la riproduzione anche parziale.</span>
         <span>Fatto con <span class="heart">♥</span> e un po' di fieno</span>
       </div>
     </div>
   </footer>
 
+  <a data-secret="whatsapp" href="#" class="wa-float" target="_blank" rel="noopener" aria-label="Scrivimi su WhatsApp"><i class="fab fa-whatsapp"></i></a>
+  <div class="print-notice">Nopal Girl — Contenuti protetti da copyright. Stampa e riproduzione vietate.</div>
   <button class="to-top" aria-label="Torna su"><i class="fas fa-arrow-up"></i></button>
 
   <script src="assets/js/main.js"></script>
