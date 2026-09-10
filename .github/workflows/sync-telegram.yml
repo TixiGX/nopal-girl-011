@@ -73,10 +73,11 @@ jobs:
           while IFS= read -r line; do
             case "$line" in
               AVVISO:*) echo "::notice::$line" ;;
-              *) [ -n "$line" ] && echo "::error::$line" ;;
+              *) if [ -n "$line" ]; then echo "::error::$line"; fi ;;
             esac
           done < sync_error.log
-          [ $rc -ne 0 ] && exit $rc
+          if [ $rc -ne 0 ]; then exit $rc; fi
+          rm -f sync_error.log
 
       - name: Commit delle novità
         run: |
