@@ -14,6 +14,7 @@ Sito statico in HTML, CSS e JavaScript puro, senza dipendenze né build step.
 │   ├── css/style.css     Foglio di stile (design token in :root)
 │   ├── js/main.js        Nav, menu mobile, reveal-on-scroll, render galleria, video
 │   ├── js/gallery-data.js  Dati della galleria (unica fonte per home e galleria)
+│   ├── images/           Illustrazioni galleria (gallery-01..06.jpg) e ritratto
 │   └── videos/           Video hero e immagine poster
 ├── LICENSE               Apache 2.0
 └── README.md
@@ -34,15 +35,26 @@ Poi apri <http://localhost:8000>.
 
 ## Aggiungere foto alla galleria
 
-Modifica `assets/js/gallery-data.js`: ogni voce ha `icon`, `title`, `description`
-e `image`. Inserisci in `image` il percorso della foto (es. `assets/images/salto-01.jpg`);
-finché è vuoto viene mostrata l'icona come segnaposto. La home mostra automaticamente
-le prime 3 voci (`data-limit="3"` su `#gallery-grid`), la galleria le mostra tutte.
+Metti la foto in `assets/images/` e aggiungi una voce in `assets/js/gallery-data.js`:
+
+```js
+{ image: 'assets/images/mia-foto.jpg', size: 'wide', tag: 'Gara',
+  icon: '🏇', title: 'Titolo', description: 'Didascalia breve' }
+```
+
+- `size`: `''` (1 cella), `'wide'` (2 colonne) o `'tall'` (2 righe) per il mosaico
+- `image` vuoto → viene mostrata l'`icon` come segnaposto
+- Le immagini si aprono in una lightbox (frecce ← →, swipe su mobile, Esc per chiudere)
+- La home mostra le prime 3 voci (`data-limit="3"` su `#gallery-grid`), la galleria tutte
+
+> Le illustrazioni attuali sono segnaposto generati nello stile del poster del video:
+> sostituiscile con le foto vere quando disponibili.
 
 ## Aggiornare i link social
 
-I link si trovano in `index.html` e `social.html` (blocco `.social-icons`):
-sostituisci gli URL `.../nopalgirl` con i profili reali.
+Gli URL `.../nopalgirl` sono placeholder. Cercali e sostituiscili con i profili reali
+(`grep -rn nopalgirl *.html`): compaiono nella nav, nella sezione social, nelle card di
+`social.html`, nel footer e nel JSON-LD di `index.html`.
 
 ## Deploy
 
