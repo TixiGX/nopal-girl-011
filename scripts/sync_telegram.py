@@ -347,11 +347,33 @@ def main() -> None:
     elif not TOKEN:
         die("imposta TELEGRAM_CHANNEL=@nomecanale (o TELEGRAM_BOT_TOKEN)")
     else:
-        die(
-            "il bot non vede ancora nessun canale: aggiungilo come "
-            "amministratore del canale, pubblica una foto e riprova "
-            "(oppure imposta TELEGRAM_CHANNEL con @username o l'id -100...)"
+        # Niente di rotto: il bot semplicemente non vede ancora nessun
+        # canale. Lasciamo la galleria vuota (il sito sa mostrare lo stato
+        # di attesa) invece di fallire il job a ogni esecuzione.
+        print(
+            "AVVISO: il bot non vede ancora nessun canale. Aggiungilo come "
+            "amministratore del canale e pubblica una foto (oppure imposta "
+            "la variabile TELEGRAM_CHANNEL con @username o l'id -100...). "
+            "Galleria lasciata vuota.",
+            file=sys.stderr,
         )
+        JSON_PATH.parent.mkdir(parents=True, exist_ok=True)
+        JSON_PATH.write_text(
+            json.dumps(
+                {
+                    "source": None,
+                    "source_url": None,
+                    "updated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                    "count": 0,
+                    "items": [],
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        return
 
     # 2) Storico e novita' dall'anteprima pubblica (canale con username).
     #    Il piu' vecchio id gia' in archivio fa da fermo all'impaginazione.
