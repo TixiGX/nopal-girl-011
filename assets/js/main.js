@@ -139,7 +139,10 @@
     initVideo();
     const grid = document.getElementById('gallery-grid');
     if (grid && window.NOPAL_GALLERY) {
-      renderGallery(grid, window.NOPAL_GALLERY);
+      // data-limit="N" mostra solo le prime N card (anteprima in home)
+      const limit = parseInt(grid.dataset.limit, 10);
+      const items = limit > 0 ? window.NOPAL_GALLERY.slice(0, limit) : window.NOPAL_GALLERY;
+      renderGallery(grid, items);
     }
   });
 })();
