@@ -44,8 +44,8 @@ scatti sono supportati.
 
 Come funziona il sync:
 
-- ogni 20 minuti (più avvio manuale) il workflow **Sync galleria da Telegram**
-  esegue `scripts/sync_telegram.py`;
+- ogni 20 minuti (più avvio manuale e a ogni aggiornamento di `main`) il
+  workflow **Sync galleria da Telegram** esegue `scripts/sync_telegram.py`;
 - per i canali **pubblici** legge l'anteprima pubblica `t.me/<canale>`:
   recupera anche **tutto lo storico** al primo giro, non solo le foto recenti,
   e rileva quando una foto viene cancellata dal canale;
