@@ -24,6 +24,39 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Diagnostica configurazione
+        env:
+          S1: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          S2: ${{ secrets.TELEGRAM_TOKEN }}
+          S3: ${{ secrets.BOT_TOKEN }}
+          S4: ${{ secrets.TELEGRAM_BOT_KEY }}
+          CH: ${{ vars.TELEGRAM_CHANNEL }}
+        run: |
+          for entry in "TELEGRAM_BOT_TOKEN:$S1" "TELEGRAM_TOKEN:$S2" "BOT_TOKEN:$S3" "TELEGRAM_BOT_KEY:$S4"; do
+            name="${entry%%:*}"; val="${entry#*:}"
+            if [ -n "$val" ]; then echo "::notice::Secret $name PRESENTE"; else echo "::notice::Secret $name assente"; fi
+          done
+          if [ -n "$CH" ]; then echo "::notice::Variabile TELEGRAM_CHANNEL=$CH"; else echo "::notice::Variabile TELEGRAM_CHANNEL assente (rilevamento automatico)"; fi
+
+      - name: Verifica token e canale visti dal bot
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN || secrets.TELEGRAM_TOKEN || secrets.BOT_TOKEN || secrets.TELEGRAM_BOT_KEY }}
+        run: |
+          set +e
+          if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
+            echo "::error::Nessun token trovato tra i secrets (nomi accettati: TELEGRAM_BOT_TOKEN, TELEGRAM_TOKEN, BOT_TOKEN, TELEGRAM_BOT_KEY)"
+            exit 1
+          fi
+          ME=$(curl -s --max-time 30 "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getMe")
+          echo "$ME" | head -c 500; echo
+          echo "$ME" | grep -q '"ok":true' && echo "::notice::getMe OK: token valido" || { echo "::error::getMe fallito: token non valido o bloccato"; exit 1; }
+          curl -s --max-time 35 "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?timeout=0&allowed_updates=%5B%22channel_post%22,%22edited_channel_post%22%5D" -o /tmp/upd.json
+          jq -e '.ok == true' /tmp/upd.json > /dev/null || { echo "::error::getUpdates: $(jq -r '.description // "risposta non valida"' /tmp/upd.json)"; exit 1; }
+          jq -r '[.result[] | select(.channel_post or .edited_channel_post) | (.channel_post // .edited_channel_post).chat] | unique | .[] | "::notice::Il bot vede il canale \"" + .title + "\" (id=" + (.id|tostring) + ", username=@" + (.username // "") + ")"' /tmp/upd.json
+          if [ "$(jq '[.result[] | select(.channel_post or .edited_channel_post)] | length' /tmp/upd.json)" = "0" ]; then
+            echo "::notice::Nessun post di canale in coda: il bot deve essere amministratore del canale, che deve avere almeno una foto pubblicata dopo l'aggiunta del bot"
+          fi
+
       - name: Sincronizza le foto dal canale Telegram
         env:
           # Accetta i nomi di secret più comuni: va bene qualunque dei quattro.
@@ -32,7 +65,17 @@ jobs:
           # @username del canale o il suo id -100... Se manca viene rilevato
           # automaticamente dal primo post che il bot vede.
           TELEGRAM_CHANNEL: ${{ vars.TELEGRAM_CHANNEL }}
-        run: python3 scripts/sync_telegram.py
+        run: |
+          set +e
+          python3 scripts/sync_telegram.py 2> sync_error.log
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            # Espone il motivo del fallimento come annotazione del check run.
+            while IFS= read -r line; do
+              [ -n "$line" ] && echo "::error::$line"
+            done < sync_error.log
+            exit $rc
+          fi
 
       - name: Commit delle novità
         run: |
