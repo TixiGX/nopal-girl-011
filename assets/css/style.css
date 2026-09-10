@@ -229,6 +229,8 @@ body::before {
   overflow: hidden; color: #fff; isolation: isolate;
 }
 .hero-video { position: absolute; inset: 0; z-index: -3; overflow: hidden; background: #2a1f1a; }
+/* <picture> è solo un contenitore di sorgenti: non deve influire sul layout */
+.hero-video picture, .about-frame picture { display: contents; }
 .hero-video video, .hero-video img.poster {
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; transform: scale(1.04);
