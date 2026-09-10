@@ -155,8 +155,8 @@
     const img = $('img', lightbox);
     img.src = item.image;
     img.alt = item.title;
-    $('h3', lightbox).textContent = item.title;
-    $('p', lightbox).textContent = item.description;
+    $('h3', lightbox).textContent = item.title || '';
+    $('p', lightbox).textContent = [item.description, item.tag].filter(Boolean).join(' · ');
     $('.lb-counter', lightbox).textContent = (lbIndex + 1) + ' / ' + lbItems.length;
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -170,38 +170,96 @@
 
   function renderGallery(grid, items) {
     if (!grid) return;
-    lbItems = items.filter(function (it) { return it.image; });
+    grid.innerHTML = '';
+    lbItems = items;
     const frag = document.createDocumentFragment();
 
-    items.forEach(function (item) {
-      const card = document.createElement(item.image ? 'button' : 'article');
+    items.forEach(function (item, i) {
+      const card = document.createElement('button');
+      card.type = 'button';
       card.className = 'card reveal-scale' + (item.size ? ' ' + item.size : '');
-      if (item.image) {
-        card.type = 'button';
-        card.setAttribute('aria-label', 'Apri ' + item.title);
-      }
+      card.setAttribute('aria-label', 'Apri ' + (item.title || 'foto ' + (i + 1)));
       card.innerHTML =
-        (item.image
-          ? '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy" decoding="async">' +
-            '<span class="zoom" aria-hidden="true"><i class="fas fa-expand"></i></span>'
-          : '<span class="placeholder" aria-hidden="true">' + escapeHtml(item.icon || '🐎') + '</span>') +
-        '<div class="card-caption">' +
-          (item.tag ? '<span class="tag">' + escapeHtml(item.tag) + '</span>' : '') +
-          '<h3>' + escapeHtml(item.title) + '</h3>' +
-          '<p>' + escapeHtml(item.description) + '</p>' +
-        '</div>';
-
-      if (item.image) {
-        const idx = lbItems.indexOf(item);
-        card.addEventListener('click', function () { showLightbox(idx); });
-      }
+        '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title || 'Foto della galleria') + '"' +
+          (item.width && item.height ? ' width="' + item.width + '" height="' + item.height + '"' : '') +
+          ' loading="lazy" decoding="async">' +
+        '<span class="zoom" aria-hidden="true"><i class="fas fa-expand"></i></span>' +
+        ((item.title || item.description || item.tag)
+          ? '<div class="card-caption">' +
+              (item.tag ? '<span class="tag">' + escapeHtml(item.tag) + '</span>' : '') +
+              (item.title ? '<h3>' + escapeHtml(item.title) + '</h3>' : '') +
+              (item.description ? '<p>' + escapeHtml(item.description) + '</p>' : '') +
+            '</div>'
+          : '');
+      card.addEventListener('click', function () { showLightbox(i); });
       frag.appendChild(card);
     });
 
     grid.appendChild(frag);
-    grid.setAttribute('data-stagger', '');
     Array.from(grid.children).forEach(function (c, i) { c.style.setProperty('--i', i % 6); });
     observeReveal(grid);
+  }
+
+  /* Stato vuoto / errore della galleria */
+  function renderGalleryEmpty(grid, message) {
+    if (!grid) return;
+    grid.innerHTML =
+      '<div class="gallery-empty reveal is-visible">' +
+        '<span class="ic"><i class="fab fa-telegram"></i></span>' +
+        '<h3>La galleria si sta riempiendo</h3>' +
+        '<p>' + escapeHtml(message) + '</p>' +
+      '</div>';
+  }
+
+  function formatDate(iso) {
+    try {
+      return new Date(iso).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+    } catch (e) { return ''; }
+  }
+
+  /* Trasforma le voci del JSON in item per la griglia.
+     size: dal rapporto d'aspetto reale della foto (panoramica → wide, verticale → tall). */
+  function mapTelegramItems(data) {
+    return (data.items || []).map(function (it) {
+      const ratio = it.width && it.height ? it.width / it.height : 1;
+      return {
+        image: it.file,
+        title: it.title || '',
+        description: it.description || '',
+        tag: it.date ? formatDate(it.date) : '',
+        width: it.width, height: it.height,
+        size: ratio >= 1.45 ? 'wide' : ratio <= 0.8 ? 'tall' : ''
+      };
+    });
+  }
+
+  function loadGallery(grid) {
+    if (!grid) return;
+    const src = grid.dataset.src || 'assets/data/gallery.json';
+    const limit = parseInt(grid.dataset.limit, 10);
+    const meta = document.getElementById('gallery-meta');
+
+    fetch(src + '?v=' + Math.floor(Date.now() / 300000), { cache: 'no-cache' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (data) {
+        let items = mapTelegramItems(data);
+        if (!items.length) {
+          renderGalleryEmpty(grid, 'Le prime foto arriveranno presto dal gruppo Telegram.');
+          return;
+        }
+        if (limit > 0) {
+          items = items.slice(0, limit);
+          // in anteprima niente celle alte: griglia compatta
+          items.forEach(function (it) { if (it.size === 'tall') it.size = ''; });
+        }
+        renderGallery(grid, items);
+        if (meta && data.updated) {
+          meta.innerHTML = '<i class="fab fa-telegram"></i> ' + data.count + ' foto · aggiornata il ' + escapeHtml(formatDate(data.updated));
+        }
+      })
+      .catch(function () {
+        renderGalleryEmpty(grid, 'Impossibile caricare la galleria in questo momento. Riprova tra poco.');
+      });
   }
 
   /* ---------- Hero video ---------- */
@@ -223,11 +281,6 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     initVideo();
-    const grid = document.getElementById('gallery-grid');
-    if (grid && window.NOPAL_GALLERY) {
-      const limit = parseInt(grid.dataset.limit, 10);
-      const items = limit > 0 ? window.NOPAL_GALLERY.slice(0, limit) : window.NOPAL_GALLERY;
-      renderGallery(grid, items);
-    }
+    loadGallery(document.getElementById('gallery-grid'));
   });
 })();

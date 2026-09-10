@@ -111,7 +111,7 @@
       <div class="container about-grid">
         <div class="about-visual reveal-left">
           <div class="about-frame">
-            <img src="assets/images/portrait.jpg" alt="Althea sorride appoggiata al collo del suo cavallo al tramonto" loading="lazy" decoding="async">
+            <img src="assets/videos/video-poster.jpg" alt="Althea seduta sotto una quercia accanto al suo cavallo al tramonto" loading="lazy" decoding="async">
           </div>
           <div class="about-badge">
             <span class="ic"><i class="fas fa-heart"></i></span>
@@ -188,9 +188,10 @@
         <div class="section-head reveal">
           <span class="eyebrow center">Galleria</span>
           <h2 id="gallery-title">Momenti <em>in volo</em></h2>
-          <p>Libertà, potenza e grazia: istanti catturati tra un salto e l'altro.</p>
+          <p>Libertà, potenza e grazia: le foto più recenti, direttamente dal mio gruppo Telegram.</p>
+          <p id="gallery-meta" class="gallery-meta" aria-live="polite"></p>
         </div>
-        <div id="gallery-grid" class="gallery-grid" data-limit="3"></div>
+        <div id="gallery-grid" class="gallery-grid" data-src="assets/data/gallery.json" data-limit="3" aria-busy="true"></div>
         <p class="gallery-note reveal">
           <a href="gallery.html" class="btn btn-outline"><i class="fas fa-border-all"></i> Vedi tutta la galleria <i class="fas fa-arrow-right"></i></a>
         </p>
@@ -213,6 +214,7 @@
             <a href="https://youtube.com/nopalgirl" class="social-link reveal" target="_blank" rel="noopener"><i class="fab fa-youtube"></i><span>YouTube</span><small>vlog</small></a>
             <a href="https://facebook.com/nopalgirl" class="social-link reveal" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i><span>Facebook</span><small>community</small></a>
             <a href="https://x.com/nopalgirl" class="social-link reveal" target="_blank" rel="noopener"><i class="fab fa-x-twitter"></i><span>X</span><small>pensieri</small></a>
+            <a href="https://t.me/+gjZgJrg2KqRkOWE0" class="social-link reveal" target="_blank" rel="noopener"><i class="fab fa-telegram"></i><span>Telegram</span><small>gruppo foto</small></a>
             <a href="https://pinterest.com/nopalgirl" class="social-link reveal" target="_blank" rel="noopener"><i class="fab fa-pinterest"></i><span>Pinterest</span><small>ispirazioni</small></a>
           </div>
         </div>
@@ -221,7 +223,6 @@
 
     <!-- ============ CTA ============ -->
     <section class="cta-strip" aria-labelledby="cta-title">
-      <img src="assets/images/gallery-06.jpg" alt="" aria-hidden="true" loading="lazy" decoding="async">
       <div class="container reveal">
         <h2 id="cta-title">Il prossimo ostacolo <em>lo saltiamo insieme</em></h2>
         <p>Ogni salto è una storia. Seguimi e vivila con me, dal primo trotto alla prossima gara.</p>
@@ -263,6 +264,7 @@
             <a href="https://youtube.com/nopalgirl" target="_blank" rel="noopener" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
             <a href="https://facebook.com/nopalgirl" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
             <a href="https://x.com/nopalgirl" target="_blank" rel="noopener" aria-label="X"><i class="fab fa-x-twitter"></i></a>
+            <a href="https://t.me/+gjZgJrg2KqRkOWE0" target="_blank" rel="noopener" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
             <a href="https://pinterest.com/nopalgirl" target="_blank" rel="noopener" aria-label="Pinterest"><i class="fab fa-pinterest"></i></a>
           </div>
         </div>
@@ -276,7 +278,6 @@
 
   <button class="to-top" aria-label="Torna su"><i class="fas fa-arrow-up"></i></button>
 
-  <script src="assets/js/gallery-data.js"></script>
   <script src="assets/js/main.js"></script>
 </body>
 </html>

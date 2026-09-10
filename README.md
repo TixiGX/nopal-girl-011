@@ -7,23 +7,27 @@ Sito statico in HTML, CSS e JavaScript puro, senza dipendenze né build step.
 
 ```
 .
-├── index.html            Home: hero con video, anteprima galleria, social
-├── gallery.html          Galleria completa
-├── social.html           Link ai profili social
+├── index.html                 Home: hero con video, storia, valori, anteprima galleria, social
+├── gallery.html               Galleria completa (foto dal gruppo Telegram)
+├── social.html                Link ai profili social
 ├── assets/
-│   ├── css/style.css     Foglio di stile (design token in :root)
-│   ├── js/main.js        Nav, menu mobile, reveal-on-scroll, render galleria, video
-│   ├── js/gallery-data.js  Dati della galleria (unica fonte per home e galleria)
-│   ├── images/           Illustrazioni galleria (gallery-01..06.jpg) e ritratto
-│   └── videos/           Video hero e immagine poster
-├── LICENSE               Apache 2.0
-└── README.md
+│   ├── css/style.css          Foglio di stile (design token in :root)
+│   ├── js/main.js             Nav, reveal, galleria (fetch del JSON), lightbox, video
+│   ├── data/gallery.json      Indice della galleria, generato dallo script di sync
+│   ├── images/telegram/       Foto scaricate da Telegram (generate, non toccare a mano)
+│   └── videos/                Video hero e immagine poster
+├── scripts/
+│   ├── sync_telegram.py       Scarica le foto dal gruppo e rigenera gallery.json
+│   ├── telegram_login.py      Genera una volta la sessione Telegram (TG_SESSION)
+│   └── requirements.txt       Dipendenze Python (Telethon)
+└── .github/workflows/
+    └── sync-telegram.yml      Sync automatico ogni 6 ore + avvio manuale
 ```
 
 ## Sviluppo locale
 
 Non serve installare nulla. Per evitare limitazioni del protocollo `file://`
-(font e icone da CDN, autoplay video) è consigliato un server statico:
+(fetch del JSON, font e icone da CDN, autoplay video) usa un server statico:
 
 ```bash
 python3 -m http.server 8000
@@ -33,22 +37,38 @@ npx serve .
 
 Poi apri <http://localhost:8000>.
 
-## Aggiungere foto alla galleria
+## Galleria automatica da Telegram
 
-Metti la foto in `assets/images/` e aggiungi una voce in `assets/js/gallery-data.js`:
+Le foto della galleria **non si caricano a mano**: arrivano dal gruppo Telegram
+[Gallery](https://t.me/+gjZgJrg2KqRkOWE0). Ogni foto pubblicata nel gruppo viene
+scaricata in `assets/images/telegram/`, indicizzata in `assets/data/gallery.json`
+e mostrata sul sito (la didascalia del messaggio diventa titolo + descrizione:
+prima riga = titolo, righe successive = descrizione). Le foto cancellate dal
+gruppo spariscono anche dal sito al sync successivo.
 
-```js
-{ image: 'assets/images/mia-foto.jpg', size: 'wide', tag: 'Gara',
-  icon: '🏇', title: 'Titolo', description: 'Didascalia breve' }
+Il gruppo è privato, quindi Telegram non espone le foto pubblicamente: serve
+un account membro del gruppo che faccia da "lettore". Configurazione una tantum:
+
+1. Vai su <https://my.telegram.org/apps> con l'account che è nel gruppo e crea
+   un'app: ottieni **API ID** e **API hash**.
+2. In locale genera la sessione (chiede telefono e codice ricevuto su Telegram):
+   ```bash
+   pip install -r scripts/requirements.txt
+   python3 scripts/telegram_login.py
+   ```
+3. Su GitHub → *Settings → Secrets and variables → Actions* crea i **secrets**:
+   `TG_API_ID`, `TG_API_HASH`, `TG_SESSION` (la stringa stampata al punto 2).
+   Facoltativo: la *variable* `TG_CHAT` se il gruppo cambia link.
+4. Tab *Actions* → "Sync galleria da Telegram" → **Run workflow**. Da lì in poi
+   gira da solo ogni 6 ore e committa solo se ci sono novità.
+
+Per lanciare il sync a mano dal PC:
+
+```bash
+TG_API_ID=... TG_API_HASH=... TG_SESSION=... python3 scripts/sync_telegram.py
 ```
 
-- `size`: `''` (1 cella), `'wide'` (2 colonne) o `'tall'` (2 righe) per il mosaico
-- `image` vuoto → viene mostrata l'`icon` come segnaposto
-- Le immagini si aprono in una lightbox (frecce ← →, swipe su mobile, Esc per chiudere)
-- La home mostra le prime 3 voci (`data-limit="3"` su `#gallery-grid`), la galleria tutte
-
-> Le illustrazioni attuali sono segnaposto generati nello stile del poster del video:
-> sostituiscile con le foto vere quando disponibili.
+> Non committare mai `TG_SESSION` o file `*.session`: sono già in `.gitignore`.
 
 ## Aggiornare i link social
 
