@@ -18,7 +18,11 @@
   <meta property="og:image" content="assets/videos/video-poster.jpg">
   <meta name="twitter:card" content="summary_large_image">
 
-  <link rel="preload" as="image" href="assets/videos/video-poster.jpg">
+  <!-- Poster 4K: il browser scarica solo la variante adatta allo schermo -->
+  <link rel="preload" as="image" type="image/webp" fetchpriority="high"
+        href="assets/videos/video-poster-1920.webp"
+        imagesrcset="assets/videos/video-poster-1280.webp 1280w, assets/videos/video-poster-1920.webp 1920w, assets/videos/video-poster-2560.webp 2560w, assets/videos/video-poster-3840.webp 3840w"
+        imagesizes="100vw">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Dancing+Script:wght@600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -70,8 +74,13 @@
     <!-- ============ HERO ============ -->
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-video" aria-hidden="true">
-        <img class="poster" src="assets/videos/video-poster.jpg" alt="" decoding="async" fetchpriority="high">
-        <video muted loop playsinline autoplay preload="auto" poster="assets/videos/video-poster.jpg">
+        <picture>
+          <source type="image/webp" sizes="100vw"
+                  srcset="assets/videos/video-poster-1280.webp 1280w, assets/videos/video-poster-1920.webp 1920w, assets/videos/video-poster-2560.webp 2560w, assets/videos/video-poster-3840.webp 3840w">
+          <img class="poster" src="assets/videos/video-poster.jpg" alt="" decoding="async" fetchpriority="high"
+               srcset="assets/videos/video-poster-1920.jpg 1920w, assets/videos/video-poster.jpg 3840w" sizes="100vw">
+        </picture>
+        <video muted loop playsinline autoplay preload="auto" poster="assets/videos/video-poster-1920.jpg">
           <source src="assets/videos/video.mp4" type="video/mp4">
         </video>
       </div>
@@ -112,7 +121,12 @@
       <div class="container about-grid">
         <div class="about-visual reveal-left">
           <div class="about-frame">
-            <img src="assets/videos/video-poster.jpg" alt="Althea seduta sotto una quercia accanto al suo cavallo al tramonto" loading="lazy" decoding="async">
+            <picture>
+              <source type="image/webp" sizes="(max-width: 860px) 420px, 600px"
+                      srcset="assets/videos/video-poster-1280.webp 1280w, assets/videos/video-poster-1920.webp 1920w, assets/videos/video-poster-2560.webp 2560w, assets/videos/video-poster-3840.webp 3840w">
+              <img src="assets/videos/video-poster-1920.jpg" alt="Althea seduta sotto una quercia accanto al suo cavallo al tramonto" loading="lazy" decoding="async"
+                   srcset="assets/videos/video-poster-1920.jpg 1920w, assets/videos/video-poster.jpg 3840w" sizes="(max-width: 860px) 420px, 600px">
+            </picture>
           </div>
           <div class="about-badge">
             <span class="ic"><i class="fas fa-heart"></i></span>

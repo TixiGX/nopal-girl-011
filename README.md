@@ -11,7 +11,8 @@ Sito statico in HTML, CSS e JavaScript puro, senza dipendenze né build step.
 ├── gallery.html               Galleria completa alimentata dal canale Telegram
 ├── social.html                Link ai profili social + contatto WhatsApp
 ├── scripts/
-│   └── sync_telegram.py       Legge il canale Telegram, scarica le foto e rigenera photos.json
+│   ├── sync_telegram.py       Legge il canale Telegram, scarica le foto e rigenera photos.json
+│   └── upscale_media.py       Porta foto e video in 4K (e i video a 60 fps) + varianti responsive
 ├── .github/workflows/
 │   └── sync-telegram.yml      Sync automatico ogni 20 minuti + avvio manuale
 └── assets/
@@ -19,7 +20,7 @@ Sito statico in HTML, CSS e JavaScript puro, senza dipendenze né build step.
     ├── js/main.js             Nav, reveal, galleria + lightbox, link riservati, protezione
     ├── data/photos.json       Elenco foto, generato dallo script di sync
     ├── images/telegram/       Foto scaricate dal canale (committate dal workflow)
-    └── videos/                Video hero e immagine poster
+    └── videos/                Video hero 4K 60fps e immagine poster 4K (+ varianti responsive)
 ```
 
 ## Sviluppo locale
@@ -92,6 +93,43 @@ Limiti noti:
   che coprono le ultime 24 ore;
 - con i canali privati l'eliminazione di un vecchio post non viene rilevata;
 - vengono importate le foto, non i video.
+
+## Media in 4K (foto e video)
+
+Tutte le foto e tutti i video del progetto sono **in 4K**, e i video girano a
+**60 fps**:
+
+- **Foto** — super-risoluzione AI (Real-ESRGAN x4plus) fino a **3840x2160**:
+  il modello ricostruisce dettagli reali (soggetti e volti restano gli stessi,
+  solo più nitidi). Da ogni master vengono generate le varianti responsive
+  WebP/JPEG a **3840 / 2560 / 1920 / 1280 px**, dichiarate nelle pagine con
+  `srcset`/`sizes`: un telefono scarica la versione giusta, il master 4K resta
+  il fallback (ed è quello usato come `og:image`).
+- **Video** — `assets/videos/video.mp4` è **3840x2160 @ 60 fps** (~5 MB):
+  leggera riduzione del rumore, interpolazione dei fotogrammi con stima del
+  movimento (da 24 a 60 fps), ingrandimento Lanczos e sharpening finale, poi
+  codifica H.264 "compressa al massimo" (CRF 30).
+
+Per rigenerare gli asset dopo aver sostituito una foto o un video:
+
+```bash
+pip install pillow ncnn sr-vulkan-model-realesrgan imageio-ffmpeg
+python3 scripts/upscale_media.py             # foto + video + varianti
+python3 scripts/upscale_media.py --only video
+python3 scripts/upscale_media.py --dry-run   # anteprima, non tocca i file
+```
+
+Note utili:
+
+- lo script serve solo a chi rigenera i media: il sito resta statico e non ha
+  dipendenze. Se `ncnn`/Real-ESRGAN mancano, le foto vengono comunque portate
+  a 4K con Lanczos (senza guadagno di dettaglio);
+- l'upscaling AI gira su CPU: contare ~2 minuti per foto su 2 core;
+- le foto che arrivano dal canale Telegram **non** vengono upscalate in
+  automatico dal workflow: per farlo basta lanciare
+  `python3 scripts/upscale_media.py` dopo un sync e committare il risultato;
+- se in futuro il video 4K risultasse troppo pesante sul traffico mobile, si
+  può riaggiungere una copia 1080p/720p come `<source>` alternativo.
 
 ## Contatto WhatsApp
 
